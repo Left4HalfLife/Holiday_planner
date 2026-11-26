@@ -1,0 +1,98 @@
+{% from 'ui.html' import icon, field %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="Your self-hosted holiday planner and local AI packing companion.">
+  <title>{% block title %}Your holidays{% endblock %} | Away Holiday Planner</title>
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/print.css') }}" media="print">
+  <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+</head>
+<body data-page="{% block page %}dashboard{% endblock %}"{% if holiday is defined %} data-holiday-id="{{ holiday.id }}"{% endif %}>
+  <a href="#main-content" class="skip-link">Skip to content</a>
+  <aside class="sidebar no-print">
+    <a class="brand" href="/"><span class="brand-mark">{{ icon('plane') }}</span>away<span class="brand-dot">.</span></a>
+    <div class="sidebar-label">YOUR TRAVEL SPACE</div>
+    <nav class="side-nav" aria-label="Main navigation">
+      <a href="/" class="{% if holiday is not defined %}active{% endif %}">{{ icon('grid') }}Overview</a>
+      {% if holiday is defined %}<a href="/holidays/{{ holiday.id }}" class="active">{{ icon('bag') }}Current holiday</a>{% endif %}
+      <button type="button" data-action="templates">{{ icon('template') }}Packing templates</button>
+    </nav>
+    <div class="sidebar-note">
+      <div class="note-icon">{{ icon('sparkles') }}</div>
+      <strong>Less packing panic.<br>More making memories.</strong>
+      <p>Your next adventure, a little more organised.</p>
+    </div>
+    <div class="local-note">{{ icon('shield') }}<span>Self-hosted. All yours.<small>Your plans stay on your server.</small></span></div>
+  </aside>
+  <div class="workspace">
+    <header class="topbar no-print">
+      <div class="breadcrumb"><a href="/">My travel space</a><span>/</span><strong>{% if holiday is defined %}Holiday details{% else %}Overview{% endif %}</strong></div>
+      <div class="topbar-actions">
+        <button type="button" id="ai-status" class="status-badge" title="Check local AI connection"><span class="status-dot"></span><span>AI: Checking</span></button>
+        <button type="button" id="theme-toggle" class="icon-button" aria-label="Switch to dark mode">{{ icon('moon') }}</button>
+        <span class="avatar" aria-label="Personal travel space">{{ icon('plane') }}</span>
+      </div>
+    </header>
+    <main id="main-content">{% block content %}{% endblock %}</main>
+    <footer class="page-footer no-print"><span>A little planning. A lot to look forward to.</span><span>AWAY / HOLIDAY PLANNER</span></footer>
+  </div>
+
+  <dialog id="holiday-dialog" class="modal large-modal">
+    <form id="holiday-form">
+      <div class="modal-header"><div><p class="eyebrow">MAKE ROOM FOR ADVENTURE</p><h2 id="holiday-form-title">New holiday</h2></div><button type="button" class="icon-button" data-close aria-label="Close">{{ icon('close') }}</button></div>
+      <div class="modal-body">
+        <p class="form-intro">Start with the essentials. You can fill in the little details later.</p>
+        <div class="form-grid">
+          {{ field('Trip title', 'title', required=true, placeholder='A week on the Italian coast', extra='full-width') }}
+          {{ field('Destination (city / country)', 'destination', required=true, placeholder='Amalfi, Italy', extra='full-width') }}
+          {{ field('Departure date', 'start_date', 'date', true) }}
+          {{ field('Return date', 'end_date', 'date', true) }}
+          {{ field('Accommodation name', 'accommodation_name', placeholder='Your home away from home') }}
+          {{ field('Accommodation address', 'accommodation_address') }}
+          {{ field('Booking reference(s)', 'booking_references', extra='full-width') }}
+          <label class="field"><span>Total budget</span><input name="budget" type="number" min="0" max="999999999.99" step="0.01" value="0" required></label>
+          <label class="field"><span>Currency</span><input name="currency" value="USD" maxlength="3" pattern="[A-Za-z]{3}" list="currency-codes" required><datalist id="currency-codes"><option value="USD"><option value="EUR"><option value="GBP"><option value="AUD"><option value="CAD"><option value="NZD"><option value="JPY"><option value="CHF"><option value="SGD"><option value="INR"></datalist></label>
+        </div>
+        <h3 class="form-section-title">The things that shape your packing</h3>
+        <div class="form-grid">
+          <label class="field"><span>Laundry available?</span><select name="laundry_available"><option value="false">No - pack for the whole trip</option><option value="true">Yes - wash and rewear</option></select></label>
+          <label class="field"><span>Expected weather / season</span><select name="weather"><option>Temperate</option><option>Cold</option><option>Tropical</option><option>Dry/Heated Indoors</option></select></label>
+          <label class="field"><span>Air quality / AQI risk</span><select name="air_quality"><option>Low</option><option>Moderate</option><option>High/Unhealthy</option></select></label>
+          {{ field('Dietary requirements', 'dietary_requirements', placeholder='Vegan, gluten-free, nut allergy...') }}
+          <label class="field full-width"><span>Notes</span><textarea name="notes" rows="3" maxlength="10000" placeholder="Ideas, reminders, places you cannot wait to see..."></textarea></label>
+        </div>
+        <p class="form-error" role="alert" hidden></p>
+      </div>
+      <div class="modal-footer"><button type="button" class="button secondary" data-close>Cancel</button><button type="submit" class="button primary">{{ icon('check') }}<span id="holiday-save-label">Create holiday</span></button></div>
+    </form>
+  </dialog>
+
+  <dialog id="templates-dialog" class="modal">
+    <div class="modal-header"><div><p class="eyebrow">PACK ONCE. PLAN AGAIN.</p><h2>Packing templates</h2></div><button type="button" class="icon-button" data-close aria-label="Close">{{ icon('close') }}</button></div>
+    <div class="modal-body">
+      <p class="form-intro" id="templates-help">Save a packing list from a holiday, then reuse it on your next adventure.</p>
+      <div id="template-list" class="template-list"></div>
+      {% if holiday is defined %}
+      <form id="template-form" class="template-save">
+        <label class="field"><span>Save this holiday's packing list</span><input name="name" maxlength="100" required placeholder="e.g. Winter city break"></label>
+        <button type="submit" class="button primary">{{ icon('template') }}Save template</button>
+        <p class="form-error" role="alert" hidden></p>
+      </form>
+      {% endif %}
+    </div>
+  </dialog>
+
+  <dialog id="confirm-dialog" class="modal confirm-modal">
+    <div class="modal-header"><h2 id="confirm-title">Are you sure?</h2></div>
+    <div class="modal-body"><p id="confirm-message"></p></div>
+    <form method="dialog" class="modal-footer"><button class="button secondary" value="cancel" autofocus>Cancel</button><button class="button danger" value="confirm">Delete</button></form>
+  </dialog>
+  <div id="toast-region" class="toast-region no-print" aria-live="polite" aria-atomic="true"></div>
+  {% block dialogs %}{% endblock %}
+</body>
+</html>

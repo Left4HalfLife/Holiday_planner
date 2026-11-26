@@ -1,0 +1,9 @@
+{% macro icon(name, extra='') -%}
+<svg class="icon {{ extra }}" aria-hidden="true"><use href="{{ url_for('static', filename='icons.svg') }}#{{ name }}"></use></svg>
+{%- endmacro %}
+
+{% macro field(label, name, type='text', required=false, value='', placeholder='', extra='') -%}
+<label class="field {{ extra }}"><span>{{ label }}{% if required %} <span class="required">*</span>{% endif %}</span>
+<input type="{{ type }}" name="{{ name }}" value="{{ value }}" placeholder="{{ placeholder }}"{% if required %} required{% endif %}{% if type == 'text' %} maxlength="500"{% endif %}>
+</label>
+{%- endmacro %}

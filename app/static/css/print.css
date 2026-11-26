@@ -1,0 +1,41 @@
+@page { margin: 16mm; size: auto; }
+@media print {
+  :root, :root[data-theme="dark"] { color-scheme: light; --text: #111; --muted: #444; --surface: white; --surface-soft: white; --bg: white; --border: #ccc; --blue: #17449a; }
+  body { background: white !important; color: #111 !important; font-size: 10pt; }
+  .no-print, dialog, .sidebar, .topbar, .page-footer, .toast-region, .skip-link { display: none !important; }
+  .workspace { margin: 0 !important; }
+  main { padding: 0 !important; max-width: none !important; min-height: 0 !important; }
+  .trip-heading { display: block !important; margin-bottom: 7mm !important; }
+  .trip-heading h1 { font-size: 25pt; }
+  .trip-meta { font-size: 10pt; color: #333; }
+  .trip-layout, .trip-main-column, .trip-side-column { display: block !important; }
+  .panel { box-shadow: none !important; border: 1px solid #ccc !important; margin-bottom: 6mm; border-radius: 0 !important; overflow: visible !important; }
+  .panel-header { padding: 4mm !important; break-after: avoid; }
+  .panel-header h2 { font-size: 13pt; }
+  .packing-summary { padding: 0 4mm 4mm; }
+  .packing-category { padding: 3mm 4mm !important; }
+  .packing-category h3 { break-after: avoid; font-size: 10pt; }
+  .packing-row { min-height: 8mm; break-inside: avoid; }
+  .packing-row.filtered-out { display: flex !important; }
+  .packing-category.filtered-out { display: block !important; }
+  .item-name, .flight-time, .details-grid p, .expense-info strong, .expense-value > strong { font-size: 10pt; }
+  .packing-row input { appearance: none; border: 1px solid #777; width: 4mm; height: 4mm; border-radius: 1mm; }
+  .packing-row input:checked::after { content: "X"; display: block; text-align: center; font-size: 9pt; line-height: 3.5mm; }
+  .flight-card, .expense-row, .details-grid > div { break-inside: avoid; }
+  .details-grid, .conditions-list { padding: 0 4mm 4mm; }
+  .details-grid { display: block; }
+  .details-grid > div { margin-bottom: 4mm; }
+  .flight-airport { font-size: 14pt; }
+  .flight-zone, .flight-extra, .panel-footnote, .detail-label { font-size: 9pt; }
+  .budget-total { padding-inline: 4mm; }
+  .budget-total strong { font-size: 20pt; }
+  .budget-progress-wrap { padding: 3mm 4mm; }
+  .budget-panel .panel-footnote { padding: 3mm 4mm; }
+  .expenses-header { padding: 3mm 4mm; }
+  .expense-row { margin-inline: 4mm; }
+  .conditions-list { font-size: 10pt; }
+  .conditions-list > div { flex-direction: row !important; }
+  .conditions-list .dietary-row { flex-direction: column !important; }
+  progress { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  a { color: #111; }
+}

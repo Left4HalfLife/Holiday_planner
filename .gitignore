@@ -208,6 +208,11 @@ cython_debug/
 # Temporary file for partial code execution
 tempCodeRunnerFile.py
 
+# Local planner database and private backups
+data/*
+!data/.gitkeep
+*.backup.db
+
 # Ruff stuff:
 .ruff_cache/
 
