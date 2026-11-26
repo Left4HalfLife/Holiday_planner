@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% from 'ui.html' import icon %}
+{% block content %}
+<section class="page-heading">
+  <div><p class="eyebrow">GOOD PLANS. GREAT MEMORIES.</p><h1>Your next adventure starts here<span class="blue-dot">.</span></h1><p>All your holidays, with a little less to think about.</p></div>
+  <button class="button primary" type="button" data-action="new-holiday">{{ icon('plus') }}New Holiday</button>
+</section>
+<section class="stats-grid" aria-label="Travel overview">
+  <article class="stat-card"><span class="stat-icon blue">{{ icon('plane') }}</span><div><p>On the horizon</p><strong id="stat-upcoming">0</strong><span class="stat-caption">upcoming holidays</span></div></article>
+  <article class="stat-card"><span class="stat-icon mint">{{ icon('calendar') }}</span><div><p>Your next getaway</p><strong id="stat-next">Ready when you are</strong><span class="stat-caption" id="stat-next-caption">Something to look forward to</span></div></article>
+  <article class="stat-card"><span class="stat-icon lavender">{{ icon('bag') }}</span><div><p>Packing progress</p><strong id="stat-progress">0%</strong><span class="stat-caption" id="stat-packed-caption">for active &amp; upcoming holidays</span></div></article>
+</section>
+<section class="holidays-section">
+  <div class="section-toolbar">
+    <div class="section-title"><h2>Your holidays</h2><span class="count-badge" id="holiday-count">0</span></div>
+    <div class="view-controls">
+      <label class="search-box">{{ icon('search') }}<input type="search" id="holiday-search" placeholder="Find a holiday..." aria-label="Search holidays"></label>
+      <div class="segmented-control" aria-label="Holiday view"><button type="button" id="list-view-button" aria-pressed="true">{{ icon('grid') }}<span>Cards</span></button><button type="button" id="calendar-view-button" aria-pressed="false">{{ icon('calendar') }}<span>Calendar</span></button></div>
+    </div>
+  </div>
+  <div id="dashboard-error" class="error-panel" role="alert" hidden></div>
+  <div id="holiday-list"><p class="loading-message">Getting your travel plans...</p></div>
+  <div id="calendar-view" class="calendar-panel" hidden>
+    <div class="calendar-toolbar"><h3 id="calendar-title"></h3><div><button type="button" class="button secondary small" id="calendar-today">Today</button><button type="button" class="icon-button previous" id="calendar-prev" aria-label="Previous month">{{ icon('chevron') }}</button><button type="button" class="icon-button" id="calendar-next" aria-label="Next month">{{ icon('chevron') }}</button></div></div>
+    <div class="weekdays" aria-hidden="true"><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span></div>
+    <div id="calendar-grid"></div>
+    <div class="calendar-legend"><span><i class="legend-dot"></i>Upcoming</span><span><i class="legend-dot active"></i>Active</span><span><i class="legend-dot past"></i>Past</span><span class="calendar-hint">Select a date to plan something new</span></div>
+  </div>
+</section>
+<section class="tip-banner">{{ icon('sparkles') }}<div><strong>A lighter suitcase starts with a smarter list.</strong><p>Open a holiday and let your local AI tailor a packing list to your plans, weather, and travel needs.</p></div><span class="tip-label">YOUR LOCAL TRAVEL COMPANION</span></section>
+{% endblock %}

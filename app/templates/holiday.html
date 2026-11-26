@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% from 'ui.html' import icon, field %}
+{% block title %}{{ holiday.title }}{% endblock %}
+{% block page %}holiday{% endblock %}
+{% block content %}
+<a href="/" class="back-link no-print">{{ icon('arrow') }}All holidays</a>
+<section class="trip-heading">
+  <div><div class="trip-kicker"><span class="eyebrow">THE NEXT CHAPTER</span><span id="trip-status" class="pill"></span></div><h1 id="trip-title">{{ holiday.title }}</h1><div class="trip-meta"><span>{{ icon('pin') }}<span id="trip-destination">{{ holiday.destination }}</span></span><span>{{ icon('calendar') }}<span id="trip-dates"></span></span><span id="trip-duration"></span></div></div>
+  <div class="trip-actions no-print"><button type="button" class="button secondary" data-action="edit-holiday">{{ icon('edit') }}Edit holiday</button><button type="button" class="button primary" data-action="open-ai">{{ icon('sparkles') }}Trip assistant</button></div>
+</section>
+<div class="trip-utility-bar no-print"><span>{{ icon('shield') }}A little preparation, a lot of peace of mind.</span><div><a href="/api/holidays/{{ holiday.id }}/calendar.ics" class="text-button">{{ icon('download') }}Export calendar</a><button type="button" class="text-button" data-action="print">{{ icon('print') }}Print itinerary</button><button type="button" class="icon-button danger-text" data-action="delete-holiday" aria-label="Delete holiday">{{ icon('trash') }}</button></div></div>
+<div id="trip-error" class="error-panel" role="alert" hidden></div>
+<div class="trip-layout">
+  <div class="trip-main-column">
+    <section class="panel packing-panel">
+      <div class="panel-header"><div class="section-title">{{ icon('bag') }}<h2>Packing list</h2></div><div class="panel-actions no-print"><button type="button" class="button ai-button small" data-action="generate-packing">{{ icon('sparkles') }}Smart pack</button><button type="button" class="button secondary small" data-action="add-packing">{{ icon('plus') }}Add item</button></div></div>
+      <div class="packing-summary"><div><strong id="packing-count">0 of 0 packed</strong><span id="packing-percent">0%</span></div><progress id="packing-progress" value="0" max="100" aria-label="Packing completion"></progress></div>
+      <div class="packing-toolbar no-print"><div class="filter-tabs" aria-label="Packing filter"><button type="button" data-filter="all" aria-pressed="true">All items</button><button type="button" data-filter="unpacked" aria-pressed="false">To pack</button><button type="button" data-filter="packed" aria-pressed="false">Packed</button></div><button type="button" class="text-button" data-action="templates">{{ icon('template') }}Templates</button></div>
+      <div id="packing-list"><p class="loading-message">Loading your packing list...</p></div>
+    </section>
+    <section class="panel">
+      <div class="panel-header"><div class="section-title">{{ icon('plane') }}<h2>Flights &amp; transit</h2></div><button type="button" class="text-button no-print" data-action="add-flight">{{ icon('plus') }}Add flight</button></div>
+      <div id="flight-list"></div>
+      <p class="panel-footnote">Times are local to each airport. Add IANA time zones for accurate calendar conversion.</p>
+    </section>
+    <section class="panel">
+      <div class="panel-header"><div class="section-title">{{ icon('pin') }}<h2>The stay &amp; the details</h2></div><button type="button" class="text-button no-print" data-action="edit-holiday">{{ icon('edit') }}Edit</button></div>
+      <div class="details-grid"><div><span class="detail-label">ACCOMMODATION</span><strong id="accommodation-name"></strong><p id="accommodation-address" class="pre-wrap"></p></div><div><span class="detail-label">BOOKING REFERENCES</span><p id="booking-references" class="pre-wrap"></p></div><div class="full-width"><span class="detail-label">TRAVEL NOTES</span><p id="trip-notes" class="pre-wrap"></p></div></div>
+    </section>
+  </div>
+  <div class="trip-side-column">
+    <section class="panel budget-panel">
+      <div class="panel-header"><div class="section-title">{{ icon('wallet') }}<h2>Trip budget</h2></div><button type="button" class="icon-button no-print" data-action="edit-holiday" aria-label="Edit budget">{{ icon('edit') }}</button></div>
+      <div class="budget-total"><span id="budget-caption">Remaining budget</span><strong id="budget-remaining"></strong><span id="budget-total"></span></div>
+      <div class="budget-progress-wrap"><progress id="budget-progress" value="0" max="100" aria-label="Budget spent"></progress><div><span>Spent <strong id="budget-spent"></strong></span><span id="budget-percent"></span></div></div>
+      <div class="expenses-header"><h3>Expense log</h3><span class="count-badge" id="expense-count">0</span></div><div id="expense-list"></div>
+      <button type="button" class="button secondary full-button no-print" data-action="add-expense">{{ icon('plus') }}Log an expense</button>
+      <p class="panel-footnote" id="expense-currency-note"></p>
+    </section>
+    <section class="panel conditions-panel">
+      <div class="panel-header"><div class="section-title">{{ icon('cloud') }}<h2>Good to know</h2></div><button type="button" class="icon-button no-print" data-action="edit-holiday" aria-label="Edit travel conditions">{{ icon('edit') }}</button></div>
+      <dl class="conditions-list"><div><dt>Expected weather</dt><dd id="trip-weather"></dd></div><div><dt>Laundry available</dt><dd id="trip-laundry"></dd></div><div><dt>Air quality risk</dt><dd id="trip-air-quality"></dd></div><div class="dietary-row"><dt>{{ icon('heart') }}Dietary requirements</dt><dd id="trip-dietary" class="pre-wrap"></dd></div></dl>
+    </section>
+    <section class="readiness-card no-print"><div class="readiness-icon">{{ icon('sparkles') }}</div><h3>Anything you have missed?</h3><p>A fresh pair of (AI) eyes on your flights, essentials, and travel details.</p><button type="button" class="button secondary full-button" data-action="audit">{{ icon('shield') }}Audit my trip</button><small>Helpful guidance, not medical or visa advice.</small></section>
+  </div>
+</div>
+{% endblock %}
+{% block dialogs %}
+<dialog id="packing-dialog" class="modal">
+  <form id="packing-form">
+    <div class="modal-header"><h2 id="packing-form-title">Add packing item</h2><button type="button" class="icon-button" data-close aria-label="Close">{{ icon('close') }}</button></div>
+    <div class="modal-body form-grid">
+      {{ field('Item name', 'name', required=true, placeholder='What are you bringing?', extra='full-width') }}
+      <label class="field"><span>Category</span><select name="category">{% for category in categories %}<option>{{ category }}</option>{% endfor %}</select></label>
+      <label class="field"><span>Quantity</span><input name="quantity" type="number" value="1" min="1" max="9999" step="1" required></label>
+      <label class="checkbox-field full-width"><input name="packed" type="checkbox">Already packed</label>
+      <p class="form-error full-width" role="alert" hidden></p>
+    </div>
+    <div class="modal-footer"><button type="button" class="button secondary" data-close>Cancel</button><button type="submit" class="button primary">Save item</button></div>
+  </form>
+</dialog>
+<dialog id="flight-dialog" class="modal large-modal">
+  <form id="flight-form">
+    <div class="modal-header"><h2 id="flight-form-title">Add flight</h2><button type="button" class="icon-button" data-close aria-label="Close">{{ icon('close') }}</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        {{ field('Airline', 'airline', placeholder='e.g. Qantas') }}
+        {{ field('Flight number', 'flight_number', required=true, placeholder='e.g. QF129') }}
+        {{ field('Departure airport', 'departure_airport', placeholder='e.g. SYD - Sydney') }}
+        {{ field('Arrival airport', 'arrival_airport', placeholder='e.g. PVG - Shanghai') }}
+        {{ field('Departure local time', 'departure_time', 'datetime-local') }}
+        {{ field('Arrival local time', 'arrival_time', 'datetime-local') }}
+        {{ field('Departure time zone (optional)', 'departure_timezone', placeholder='Australia/Sydney') }}
+        {{ field('Arrival time zone (optional)', 'arrival_timezone', placeholder='Asia/Shanghai') }}
+        {{ field('Terminal', 'terminal') }}
+        {{ field('Gate', 'gate') }}
+        {{ field('Booking code', 'booking_code', extra='full-width') }}
+      </div>
+      <p class="form-intro">Without a time zone, calendar times follow the importing calendar's local zone. Flights without a departure time are not exported.</p>
+      <p class="form-error" role="alert" hidden></p>
+    </div>
+    <div class="modal-footer"><button type="button" class="button secondary" data-close>Cancel</button><button type="submit" class="button primary">Save flight</button></div>
+  </form>
+</dialog>
+<dialog id="expense-dialog" class="modal">
+  <form id="expense-form">
+    <div class="modal-header"><h2 id="expense-form-title">Log an expense</h2><button type="button" class="icon-button" data-close aria-label="Close">{{ icon('close') }}</button></div>
+    <div class="modal-body form-grid">
+      {{ field('Description', 'description', required=true, placeholder='e.g. Hotel deposit', extra='full-width') }}
+      <label class="field"><span id="expense-amount-label">Amount</span><input name="amount" type="number" min="0.01" max="999999999.99" step="0.01" required></label>
+      <label class="field"><span>Category</span><select name="category">{% for category in expense_categories %}<option>{{ category }}</option>{% endfor %}</select></label>
+      {{ field('Date', 'date', 'date', true, extra='full-width') }}
+      <p class="form-error full-width" role="alert" hidden></p>
+    </div>
+    <div class="modal-footer"><button type="button" class="button secondary" data-close>Cancel</button><button type="submit" class="button primary">Save expense</button></div>
+  </form>
+</dialog>
+<dialog id="ai-dialog" class="ai-drawer">
+  <div class="ai-header"><span class="stat-icon blue">{{ icon('sparkles') }}</span><div><h2>Your trip companion</h2><p>Local AI, thoughtful planning.</p></div><button type="button" class="icon-button" data-close aria-label="Close assistant">{{ icon('close') }}</button></div>
+  <div class="ai-notice">{{ icon('info') }}The assistant can change this trip's packing, flights, budget, and details. Review its changes before you travel.</div>
+  <div id="chat-messages" class="chat-messages" aria-live="polite" aria-label="Conversation"></div>
+  <div id="ai-working" class="ai-working" role="status" hidden><span class="spinner"></span>Thinking through your travel plans...</div>
+  <div class="chat-suggestions"><button type="button" data-action="generate-packing">{{ icon('bag') }}Build my packing list</button><button type="button" data-action="audit">{{ icon('shield') }}Audit my trip</button></div>
+  <form id="chat-form" class="chat-form"><label for="chat-input" class="sr-only">Message your trip assistant</label><textarea id="chat-input" name="message" rows="2" maxlength="4000" required placeholder="Add 3 packs of KN95 masks to my list..."></textarea><button type="submit" class="button primary icon-button" aria-label="Send message">{{ icon('arrow') }}</button></form>
+  <p class="ai-footnote">Powered by your configured OpenAI-compatible server. AI can make mistakes.</p>
+</dialog>
+{% endblock %}

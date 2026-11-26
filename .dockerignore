@@ -1,0 +1,14 @@
+.git
+.github
+.env
+.env.*
+.venv
+__pycache__
+*.pyc
+data
+tests
+LICENSE
+README.md
+.pytest_cache
+.ruff_cache
+node_modules
